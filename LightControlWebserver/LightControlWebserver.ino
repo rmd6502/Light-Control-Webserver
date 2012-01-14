@@ -102,6 +102,10 @@ void loop() {
 }
 
 void handle_request(char *request, Client &client) {
+  static int botpart_len = 0;
+  if (botpart_len == 0) {
+    botpart_len = strlen_P(botPart);
+  }
   char *firstline = strtok(request, "\r\n");
   char *verb = strtok(firstline, " \t");
   char *req = strtok(NULL, " \t");
@@ -154,21 +158,13 @@ void handle_request(char *request, Client &client) {
   buf[255] = 0;
   Serial.println(buf);
   client.println(buf);
-  strcpy_P(buf, botPart1);
-  buf[255] = 0;
-  Serial.println(buf);
-  client.println(buf);
-  strcpy_P(buf, botPart2);
-  buf[255] = 0;
-  Serial.println(buf);
-  client.println(buf);
-  strcpy_P(buf, botPart3);
-  buf[255] = 0;
-  Serial.println(buf);
-  client.println(buf);
-  strcpy_P(buf, botPart4);
-  buf[255] = 0;
-  Serial.println(buf);
-  client.println(buf);
+  int c = 0;
+  while (c < botpart_len) {
+    strncpy_P(buf, &botPart[c], 255);
+    buf[255] = 0;
+    Serial.println(buf);
+    client.println(buf);
+    c += 255;
+  }
 }
 

@@ -18,21 +18,15 @@ char varPart[] = "<TD>Red</TD><TD><INPUT TYPE=\"text\" name=\"r\" value=\"%d\"/>
   "<TR>"
   "<TD>Blue</TD><TD><INPUT TYPE=\"text\" name=\"b\" value=\"%d\"/></TD>";
 
-const char botPart1[] PROGMEM = "</TR>"
+const char botPart[] PROGMEM = "</TR>"
   "</TABLE>"
   "<INPUT TYPE=\"submit\" value=\"Set Colors\"/><br />"
   "<INPUT TYPE=\"submit\" name=\"setcolor\" value=\"white\"/>"
-  "<INPUT TYPE=\"submit\" name=\"setcolor\" style=\"background: black; color: white; \" value=\"off\"/>";
-  
-const char botPart2[] PROGMEM = 
+  "<INPUT TYPE=\"submit\" name=\"setcolor\" style=\"background: black; color: white; \" value=\"off\"/>"
   "<INPUT TYPE=\"submit\" name=\"setcolor\" style=\"background: blue; color: white; \" value=\"blue\"/>"
-  "<INPUT TYPE=\"submit\" name=\"setcolor\" style=\"background: red; color: white; \" value=\"red\"/>";
-  
-const char botPart3[] PROGMEM =   
+  "<INPUT TYPE=\"submit\" name=\"setcolor\" style=\"background: red; color: white; \" value=\"red\"/>"
   "<INPUT TYPE=\"submit\" name=\"setcolor\" style=\"background: yellow; color: black; \" value=\"yellow\"/>"
-  "<INPUT TYPE=\"submit\" name=\"setcolor\" style=\"background: green; color: yellow; \" value=\"green\"/>";
-  
-const char botPart4[] PROGMEM =
+  "<INPUT TYPE=\"submit\" name=\"setcolor\" style=\"background: green; color: yellow; \" value=\"green\"/>"
   "<INPUT TYPE=\"submit\" name=\"setcolor\" style=\"background: #101010; color: white; \" value=\"night\"/>"
   "</FORM>"
     "</BODY>"
