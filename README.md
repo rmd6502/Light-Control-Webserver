@@ -4,7 +4,9 @@ I used an Arduino Diecimila, a
 and a [Sparkfun LED strip](http://www.sparkfun.com/products/10260) to light up my hallway.
 
 The circuit uses three MOSFETs with very low Rdson, connected to pins 3 (red), 5 (green), and 6 (blue).
-Schematic to be uploaded presently.
+
+led_control.sch/.brd are the Eagle files, led_control_schematic.png is the schematic exported for those
+who don't own eagle, and led_control.pdf is an image of the board suitable for toner transfer.
 
 # Usage
 You'll need to edit Credentials.h with the appropriate definitions:
