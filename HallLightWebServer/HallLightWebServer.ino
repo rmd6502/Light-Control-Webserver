@@ -13,9 +13,9 @@
 
 Server server(80);
 
-static const int rLed = 9;
-static const int gLed = 10;
-static const int bLed = 11;
+static const int rLed = 3;
+static const int gLed = 5;
+static const int bLed = 6;
 
 static int r=0, g=0, b=0;
 
