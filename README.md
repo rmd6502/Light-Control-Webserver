@@ -20,4 +20,6 @@ You'll need to edit Credentials.h with the appropriate definitions:
     Self explanatory
 
 Once you've done that, plug your Arduino into an external power supply 
-	  (the regulator won't drive the LED strip).  
+	  (the regulator won't drive the LED strip).  If you start the serial monitor at 115200 baud,
+	  the Arduino will display its IP address.  You can then connect to that IP with a web browser,
+	  hopefully the interface is simple enough.
