@@ -1,4 +1,4 @@
-const prog_char topPart[] PROGMEM = "HTTP/1.1 200 OK\n"
+const prog_char *topPart PROGMEM = "HTTP/1.1 200 OK\n"
   "Content-Type: text/html\n\n"
   "<HTML><HEAD><TITLE>Arduino!</TITLE>"
   "<STYLE TYPE=\"text/css\">"

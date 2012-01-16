@@ -14,7 +14,7 @@ const char* PROGMEM white = "white";
 const char* PROGMEM off = "off";
 const char* PROGMEM night = "night";
 
-const NamedColor colors[] PROGMEM = {
+const NamedColor colors[] = {
   { red, 255, 0, 0 },
   { dim_red, 100, 0, 0 },
   { orange, 255, 128, 0 },
@@ -24,6 +24,6 @@ const NamedColor colors[] PROGMEM = {
   { violet, 255, 0, 255 },
   { white, 255, 240, 230 },
   { off, 0, 0, 0 },
-  { night, 5, 2, 1 },
+  { night, 3, 2, 1 },
   { 0, 0, 0, 0}
 };

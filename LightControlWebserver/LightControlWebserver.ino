@@ -18,7 +18,9 @@ static const int rLed = 3;
 static const int gLed = 5;
 static const int bLed = 6;
 
-static int r=0, g=0, b=0;
+byte current[3] = {0};
+byte goal[3] = {255, 200, 180};
+byte pins[3] = {0};
 
 template <int SZ>
 class RequestBuf {
@@ -43,6 +45,13 @@ class RequestBuf {
 RequestBuf<128> requestbuf;
 
 void setup() {
+  Serial.begin(115200);
+  Serial.println("starting");
+  
+  pins[0] = rLed;
+  pins[1] = gLed;
+  pins[2] = bLed;
+  
   WiFly.begin();
 
   if (!WiFly.join(ssid, passphrase)) {
@@ -54,7 +63,6 @@ void setup() {
   
   WiFly.configure(WIFLY_BAUD, 115200);
 
-  Serial.begin(115200);
   Serial.print("IP: ");
   Serial.println(WiFly.ip());
   
@@ -95,6 +103,16 @@ void loop() {
           current_line_is_blank = false;
         }
       }
+      for (int j=0; j < 3; ++j) {
+        if (goal[j] != current[j]) {
+          int dir = goal[j] - current[j];
+          dir /= abs(dir);
+          //Serial.print("dir "); Serial.println((short)dir);
+          current[j] += dir;
+          analogWrite(pins[j], current[j]);
+        }
+      }
+      delay(5);
     }
     // give the web browser time to receive the data
     delay(100);
@@ -115,27 +133,18 @@ void handle_request(char *request, Client &client) {
       char *q = strchr(p, '=');
       if (q) ++q;
       if (*p == 'r') {
-        r = atoi(q);
-        analogWrite(rLed, r);
+        goal[0] = atoi(q);
       } else if (*p == 'g') {
-        g = atoi(q);
-        analogWrite(gLed, g);
+        goal[1] = atoi(q);
       } else if (*p == 'b') {
-        b = atoi(q);
-        analogWrite(bLed, b);
+        goal[2] = atoi(q);
       } else if (!strncasecmp(p, "setcolor", strlen("setcolor"))) {
-        const char *colorName;
-        for (const NamedColor *nc = colors; (colorName = (char *)pgm_read_word(nc)) != 0; ++nc) {
-          if (!strcasecmp(colorName, q)) {  
-            NamedColor ncl;
-            memcpy_P(&ncl, nc, sizeof(NamedColor));
-            r = ncl.r; g = ncl.g; b = ncl.b;
+        for (const NamedColor *nc = colors; nc->name; ++nc) {
+          if (!strcasecmp(nc->name, q)) {  
+            goal[0] = nc->r; goal[1] = nc->g; goal[2] = nc->b;
             break;
           }
         }
-        analogWrite(rLed, r);
-        analogWrite(gLed, g);
-        analogWrite(bLed, b);
         break;
       }    
     }
@@ -145,16 +154,14 @@ void handle_request(char *request, Client &client) {
   buf[255] = 0;
   Serial.println(buf);
   client.println(buf);
-  sprintf(buf, varPart, r, g, b);
+  sprintf(buf, varPart, goal[0], goal[1], goal[2]);
   buf[255] = 0;
   Serial.println(buf);
   client.println(buf);
   output_P(buf, client, botPart1);
-  for (const NamedColor *nc = colors; pgm_read_word(nc) != 0; ++nc) {
-    NamedColor ncl;
-    memcpy_P(&ncl, nc, sizeof(NamedColor));
+  for (const NamedColor *nc = colors; nc->name != 0; ++nc) {    
     char cbuf[32];
-    strcpy_P(cbuf, ncl.name);
+    strcpy_P(cbuf, nc->name);
     sprintf(buf, "<INPUT TYPE=\"submit\" name=\"setcolor\" value=\"%s\" />", cbuf);
     Serial.println(buf);
     client.println(buf);
