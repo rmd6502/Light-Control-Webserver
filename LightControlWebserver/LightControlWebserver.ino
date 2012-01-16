@@ -39,12 +39,13 @@ class RequestBuf {
   operator const char *() const { return requestbuf; }
 };
 
-RequestBuf<128> requestbuf;
+RequestBuf<80> requestbuf;
 
 void setup() {
   WiFly.begin();
   Serial.begin(115200);
   
+  Serial.println("Hello World");
   if (!WiFly.join(ssid, passphrase)) {
     Serial.print("Failed to associate with "); Serial.println(ssid);
     while (1) {
@@ -124,9 +125,7 @@ void handle_request(char *request, Client &client) {
       } else if (*p == 'b') {
         b = atoi(q);
       } else if (!strncasecmp(p, "setcolor", strlen("setcolor"))) {
-        Serial.println("setcolor");
         if (!strcasecmp(q, "white")) {
-          Serial.println("white");
           r = 255; g = 240; b = 230;
         } else if (!strcasecmp(q, "off")) {
           r = 0; g = 0; b = 0;
@@ -138,8 +137,6 @@ void handle_request(char *request, Client &client) {
           r = 0; b = 0; g = 255;
         } else if (!strcasecmp(q, "yellow")) {
           b = 20; g = 255; r = 255;
-        } else if (!strcasecmp(q, "orange")) {
-          r = 255; g = 128; b = 0;
         } else if (!strcasecmp(q, "pink")) {
           r = 255; g = 60; b = 120;
         } else if (!strcasecmp(q, "night")) {
@@ -151,22 +148,23 @@ void handle_request(char *request, Client &client) {
     analogWrite(gLed, g);
     analogWrite(bLed, b);
   }
-  char buf[256];
+
+  char buf[160];
   strcpy_P(buf, topPart);
-  buf[255] = 0;
+  buf[sizeof(buf)-1] = 0;
   Serial.println(buf);
   client.println(buf);
   sprintf(buf, varPart, r, g, b);
-  buf[255] = 0;
+  buf[sizeof(buf)-1] = 0;
   Serial.println(buf);
   client.println(buf);
   int c = 0;
   while (c < botpart_len) {
-    strncpy_P(buf, &botPart[c], 255);
-    buf[255] = 0;
+    strncpy_P(buf, &botPart[c], (sizeof(buf)-1));
+    buf[sizeof(buf)-1] = 0;
     Serial.println(buf);
     client.println(buf);
-    c += 255;
+    c += (sizeof(buf)-1);
   }
 }
 
