@@ -119,13 +119,10 @@ void handle_request(char *request, Client &client) {
       if (q) ++q;
       if (*p == 'r') {
         r = atoi(q);
-        analogWrite(rLed, r);
       } else if (*p == 'g') {
         g = atoi(q);
-        analogWrite(gLed, g);
       } else if (*p == 'b') {
         b = atoi(q);
-        analogWrite(bLed, b);
       } else if (!strncasecmp(p, "setcolor", strlen("setcolor"))) {
         Serial.println("setcolor");
         if (!strcasecmp(q, "white")) {
@@ -143,11 +140,16 @@ void handle_request(char *request, Client &client) {
           b = 20; g = 255; r = 255;
         } else if (!strcasecmp(q, "orange")) {
           r = 255; g = 128; b = 0;
+        } else if (!strcasecmp(q, "pink")) {
+          r = 255; g = 60; b = 120;
         } else if (!strcasecmp(q, "night")) {
           r = 5; g = 3; b = 1;
         }
       }    
     }
+    analogWrite(rLed, r);
+    analogWrite(gLed, g);
+    analogWrite(bLed, b);
   }
   char buf[256];
   strcpy_P(buf, topPart);
