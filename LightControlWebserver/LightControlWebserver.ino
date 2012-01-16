@@ -42,10 +42,11 @@ class RequestBuf {
 RequestBuf<80> requestbuf;
 
 void setup() {
-  WiFly.begin();
   Serial.begin(115200);
   
   Serial.println("Hello World");
+  
+  WiFly.begin();
   if (!WiFly.join(ssid, passphrase)) {
     Serial.print("Failed to associate with "); Serial.println(ssid);
     while (1) {
