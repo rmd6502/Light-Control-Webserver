@@ -43,7 +43,8 @@ RequestBuf<128> requestbuf;
 
 void setup() {
   WiFly.begin();
-
+  Serial.begin(115200);
+  
   if (!WiFly.join(ssid, passphrase)) {
     Serial.print("Failed to associate with "); Serial.println(ssid);
     while (1) {
@@ -53,7 +54,6 @@ void setup() {
   
   WiFly.configure(WIFLY_BAUD, 115200);
 
-  Serial.begin(115200);
   Serial.print("IP: ");
   Serial.println(WiFly.ip());
   
