@@ -10,6 +10,7 @@
 #include "WiFly.h"
 #include "Credentials.h"
 #include "htmltext.h"
+#include "colors.h"
 
 Server server(80);
 
@@ -102,10 +103,6 @@ void loop() {
 }
 
 void handle_request(char *request, Client &client) {
-  static int botpart_len = 0;
-  if (botpart_len == 0) {
-    botpart_len = strlen_P(botPart);
-  }
   char *firstline = strtok(request, "\r\n");
   char *verb = strtok(firstline, " \t");
   char *req = strtok(NULL, " \t");
@@ -127,30 +124,24 @@ void handle_request(char *request, Client &client) {
         b = atoi(q);
         analogWrite(bLed, b);
       } else if (!strncasecmp(p, "setcolor", strlen("setcolor"))) {
-        Serial.println("setcolor");
-        if (!strcasecmp(q, "white")) {
-          Serial.println("white");
-          r = 255; g = 240; b = 230;
-        } else if (!strcasecmp(q, "off")) {
-          r = 0; g = 0; b = 0;
-        } else if (!strcasecmp(q, "blue")) {
-          r = 0; g = 0; b = 255;
-        } else if (!strcasecmp(q, "red")) {
-          b = 0; g = 0; r = 255;
-        } else if (!strcasecmp(q, "green")) {
-          r = 0; b = 0; g = 255;
-        } else if (!strcasecmp(q, "yellow")) {
-          b = 20; g = 255; r = 255;
-        } else if (!strcasecmp(q, "orange")) {
-          r = 255; g = 128; b = 0;
-        } else if (!strcasecmp(q, "night")) {
-          r = 5; g = 3; b = 1;
+        const char *colorName;
+        for (const NamedColor *nc = colors; (colorName = (char *)pgm_read_word(nc)) != 0; ++nc) {
+          if (!strcasecmp(colorName, q)) {  
+            NamedColor ncl;
+            memcpy_P(&ncl, nc, sizeof(NamedColor));
+            r = ncl.r; g = ncl.g; b = ncl.b;
+            break;
+          }
         }
+        analogWrite(rLed, r);
+        analogWrite(gLed, g);
+        analogWrite(bLed, b);
+        break;
       }    
     }
   }
   char buf[256];
-  strcpy_P(buf, topPart);
+  output_P(buf, client, topPart);
   buf[255] = 0;
   Serial.println(buf);
   client.println(buf);
@@ -158,9 +149,24 @@ void handle_request(char *request, Client &client) {
   buf[255] = 0;
   Serial.println(buf);
   client.println(buf);
+  output_P(buf, client, botPart1);
+  for (const NamedColor *nc = colors; pgm_read_word(nc) != 0; ++nc) {
+    NamedColor ncl;
+    memcpy_P(&ncl, nc, sizeof(NamedColor));
+    char cbuf[32];
+    strcpy_P(cbuf, ncl.name);
+    sprintf(buf, "<INPUT TYPE=\"submit\" name=\"setcolor\" value=\"%s\" />", cbuf);
+    Serial.println(buf);
+    client.println(buf);
+  }
+  output_P(buf, client, botPart2);
+}
+
+void output_P(char *buf, Client& client, const prog_char * PROGMEM str) {
+  int part_len = strlen_P(str);
   int c = 0;
-  while (c < botpart_len) {
-    strncpy_P(buf, &botPart[c], 255);
+  while (c < part_len) {
+    strncpy_P(buf, &str[c], 255);
     buf[255] = 0;
     Serial.println(buf);
     client.println(buf);
