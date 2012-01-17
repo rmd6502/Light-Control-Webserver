@@ -13,7 +13,8 @@
 #include "colors.h"
 
 Server server(80);
-
+  char buf[256];
+  
 static const int rLed = 3;
 static const int gLed = 5;
 static const int bLed = 6;
@@ -48,6 +49,7 @@ RequestBuf<80> requestbuf;
 void setup() {
   Serial.begin(115200);
   Serial.println("starting");
+  printf_P(buf, topPart);
   
   pins[0] = rLed;
   pins[1] = gLed;
@@ -149,8 +151,10 @@ void handle_request(char *request, Client &client) {
       } else if (*p == 'b') {
         goal[2] = atoi(q);
       } else if (!strncasecmp(p, "setcolor", strlen("setcolor"))) {
+        char cbuf[32];
         for (const NamedColor *nc = colors; nc->name; ++nc) {
-          if (!strcasecmp(nc->name, q)) {  
+          strcpy_P(cbuf, nc->name);
+          if (!strcasecmp(cbuf, q)) {  
             goal[0] = nc->r; goal[1] = nc->g; goal[2] = nc->b;
             break;
           }
@@ -159,7 +163,6 @@ void handle_request(char *request, Client &client) {
       }    
     }
   }
-  char buf[256];
   output_P(buf, client, topPart);
   buf[255] = 0;
   Serial.println(buf);
@@ -179,11 +182,23 @@ void handle_request(char *request, Client &client) {
   output_P(buf, client, botPart2);
 }
 
-void output_P(char *buf, Client& client, const prog_char * PROGMEM str) {
+void printf_P(char *buf, const char *str) {
+  int part_len = strlen_P(str);
+  Serial.print("len "); Serial.println(part_len);
+  int c = 0;
+  while (c < part_len) {
+    strncpy_P(buf, str+c, 255);
+    buf[255] = 0;
+    Serial.println(buf);
+    c += 255;
+  }
+}
+
+void output_P(char *buf, Client& client, const char * str) {
   int part_len = strlen_P(str);
   int c = 0;
   while (c < part_len) {
-    strncpy_P(buf, &str[c], 255);
+    strncpy_P(buf, str+c, 255);
     buf[255] = 0;
     Serial.println(buf);
     client.println(buf);

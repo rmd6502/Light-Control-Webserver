@@ -1,4 +1,4 @@
-const prog_char *topPart PROGMEM = "HTTP/1.1 200 OK\n"
+const char topPart[] PROGMEM = "HTTP/1.1 200 OK\n"
   "Content-Type: text/html\n\n"
   "<HTML><HEAD><TITLE>Arduino!</TITLE>"
   "<STYLE TYPE=\"text/css\">"
@@ -18,12 +18,12 @@ const char varPart[] = "<TD>Red</TD><TD><INPUT TYPE=\"text\" name=\"r\" value=\"
   "<TR>"
   "<TD>Blue</TD><TD><INPUT TYPE=\"text\" name=\"b\" value=\"%d\"/></TD>";
 
-const prog_char botPart1[] PROGMEM = "</TR>"
+const char botPart1[] PROGMEM = "</TR>"
   "</TABLE>"
   "<INPUT TYPE=\"submit\" value=\"Set Colors\"/><br />"
   "<INPUT TYPE=\"submit\" name=\"setcolor\" value=\"white\"/>";
   
-const prog_char botPart2[] PROGMEM =
+const char botPart2[] PROGMEM =
   "</FORM>"
   "</BODY>"
   "</HTML>\r\n";

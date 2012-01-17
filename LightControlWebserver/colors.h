@@ -3,16 +3,16 @@ struct NamedColor {
   int r,g,b;
 };
 
-const char* PROGMEM red = "red";
-const char* PROGMEM dim_red = "dim red";
-const char* PROGMEM orange = "orange";
-const char* PROGMEM yellow = "yellow";
-const char* PROGMEM green = "green";
-const char* PROGMEM blue = "blue";
-const char* PROGMEM violet = "violet";
-const char* PROGMEM white = "white";
-const char* PROGMEM off = "off";
-const char* PROGMEM night = "night";
+const char PROGMEM red[] = "red";
+const char PROGMEM dim_red[] = "dim red";
+const char PROGMEM orange[] = "orange";
+const char PROGMEM yellow[] = "yellow";
+const char PROGMEM green[] = "green";
+const char PROGMEM blue[] = "blue";
+const char PROGMEM violet[] = "violet";
+const char PROGMEM white[] = "white";
+const char PROGMEM off[] = "off";
+const char PROGMEM night[] = "night";
 
 const NamedColor colors[] = {
   { red, 255, 0, 0 },
