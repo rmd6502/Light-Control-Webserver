@@ -150,10 +150,16 @@ void handle_request(char *request, Client &client) {
       } else if (*p == 'b') {
         goal[2] = atoi(q);
       } else if (!strncasecmp(p, "setcolor", strlen("setcolor"))) {
-        char cbuf[32];
+        char cbuf[32], dbuf[32] = {0};
+        strncpy(dbuf, q, 31);
+        char *k = dbuf;
+        while (*k) {
+          if (*k == '+') *k = ' ';
+          ++k;
+        }
         for (const NamedColor *nc = colors; nc->name; ++nc) {
           strcpy_P(cbuf, nc->name);
-          if (!strcasecmp(cbuf, q)) {  
+          if (!strcasecmp(cbuf, dbuf)) {  
             goal[0] = nc->r; goal[1] = nc->g; goal[2] = nc->b;
             break;
           }
