@@ -10,14 +10,18 @@
 #include "WiFly.h"
 #include "Credentials.h"
 #include "htmltext.h"
+#include "colors.h"
 
 Server server(80);
-
+  char buf[256];
+  
 static const int rLed = 3;
 static const int gLed = 5;
 static const int bLed = 6;
 
-static int r=0, g=0, b=0;
+byte current[3] = {0};
+byte goal[3] = {255, 200, 180};
+byte pins[3] = {0};
 
 template <int SZ>
 class RequestBuf {
@@ -33,6 +37,7 @@ class RequestBuf {
     requestbuf[requestpos++] = c;
     requestbuf[requestpos] = 0; 
   }
+  size_t size() const { return SZ; }
   const char& operator[](int pos) const { if (pos >= 0 && pos < SZ) return requestbuf[pos]; else return b; }
   char& operator[](int pos) { if (pos >= 0 && pos < SZ) return requestbuf[pos]; else return b; }
   operator char *() { return requestbuf; }
@@ -44,7 +49,11 @@ RequestBuf<80> requestbuf;
 void setup() {
   Serial.begin(115200);
   
-  Serial.println("Hello World");
+  Serial.println("starting");
+  
+  pins[0] = rLed;
+  pins[1] = gLed;
+  pins[2] = bLed;
   
   WiFly.begin();
   if (!WiFly.join(ssid, passphrase)) {
@@ -96,18 +105,33 @@ void loop() {
           current_line_is_blank = false;
         }
       }
+      for (int j=0; j < 3; ++j) {
+        if (goal[j] != current[j]) {
+          int dir = goal[j] - current[j];
+          dir /= abs(dir);
+          //Serial.print("dir "); Serial.println((short)dir);
+          current[j] += dir;
+          analogWrite(pins[j], current[j]);
+        }
+      }
+      delay(5);
     }
     // give the web browser time to receive the data
     delay(100);
     client.stop();
   }
+  for (int j=0; j < 3; ++j) {
+    if (goal[j] != current[j]) {
+      int dir = goal[j] - current[j];
+      dir /= abs(dir);
+      //Serial.print("dir "); Serial.println((short)dir);
+      current[j] += dir;
+      analogWrite(pins[j], current[j]);
+    }
+  }
 }
 
 void handle_request(char *request, Client &client) {
-  static int botpart_len = 0;
-  if (botpart_len == 0) {
-    botpart_len = strlen_P(botPart);
-  }
   char *firstline = strtok(request, "\r\n");
   char *verb = strtok(firstline, " \t");
   char *req = strtok(NULL, " \t");
@@ -120,49 +144,61 @@ void handle_request(char *request, Client &client) {
       char *q = strchr(p, '=');
       if (q) ++q;
       if (*p == 'r') {
-        r = atoi(q);
+        goal[0] = atoi(q);
       } else if (*p == 'g') {
-        g = atoi(q);
+        goal[1] = atoi(q);
       } else if (*p == 'b') {
-        b = atoi(q);
+        goal[2] = atoi(q);
       } else if (!strncasecmp(p, "setcolor", strlen("setcolor"))) {
-        if (!strcasecmp(q, "white")) {
-          r = 255; g = 240; b = 230;
-        } else if (!strcasecmp(q, "off")) {
-          r = 0; g = 0; b = 0;
-        } else if (!strcasecmp(q, "blue")) {
-          r = 0; g = 0; b = 255;
-        } else if (!strcasecmp(q, "red")) {
-          b = 0; g = 0; r = 255;
-        } else if (!strcasecmp(q, "green")) {
-          r = 0; b = 0; g = 255;
-        } else if (!strcasecmp(q, "yellow")) {
-          b = 20; g = 255; r = 255;
-        } else if (!strcasecmp(q, "pink")) {
-          r = 255; g = 60; b = 120;
-        } else if (!strcasecmp(q, "night")) {
-          r = 5; g = 3; b = 1;
+        char cbuf[32];
+        for (const NamedColor *nc = colors; nc->name; ++nc) {
+          strcpy_P(cbuf, nc->name);
+          if (!strcasecmp(cbuf, q)) {  
+            goal[0] = nc->r; goal[1] = nc->g; goal[2] = nc->b;
+            break;
+          }
         }
+        break;
       }    
     }
-    analogWrite(rLed, r);
-    analogWrite(gLed, g);
-    analogWrite(bLed, b);
   }
+  output_P(buf, client, topPart);
+  buf[255] = 0;
+  Serial.println(buf);
+  client.println(buf);
+  snprintf(buf, sizeof(buf), varPart, goal[0], goal[1], goal[2]);
+  buf[255] = 0;
+  Serial.println(buf);
+  client.println(buf);
+  output_P(buf, client, botPart1);
+  for (const NamedColor *nc = colors; nc->name != 0; ++nc) {    
+    char cbuf[32];
+    strcpy_P(cbuf, nc->name);
+    snprintf(buf, sizeof(buf), "<INPUT TYPE=\"submit\" name=\"setcolor\" value=\"%s\" />", cbuf);
+    Serial.println(buf);
+    client.println(buf);
+  }
+  output_P(buf, client, botPart2);
+}
 
-  char buf[160];
-  strcpy_P(buf, topPart);
-  buf[sizeof(buf)-1] = 0;
-  Serial.println(buf);
-  client.println(buf);
-  sprintf(buf, varPart, r, g, b);
-  buf[sizeof(buf)-1] = 0;
-  Serial.println(buf);
-  client.println(buf);
+void printf_P(char *buf, const char *str) {
+  int part_len = strlen_P(str);
+  Serial.print("len "); Serial.println(part_len);
   int c = 0;
-  while (c < botpart_len) {
-    strncpy_P(buf, &botPart[c], (sizeof(buf)-1));
-    buf[sizeof(buf)-1] = 0;
+  while (c < part_len) {
+    strncpy_P(buf, str+c, 255);
+    buf[255] = 0;
+    Serial.println(buf);
+    c += 255;
+  }
+}
+
+void output_P(char *buf, Client& client, const char * str) {
+  int part_len = strlen_P(str);
+  int c = 0;
+  while (c < part_len) {
+    strncpy_P(buf, str+c, 255);
+    buf[255] = 0;
     Serial.println(buf);
     client.println(buf);
     c += (sizeof(buf)-1);
