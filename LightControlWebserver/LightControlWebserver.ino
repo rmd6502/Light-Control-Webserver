@@ -129,6 +129,7 @@ void loop() {
       analogWrite(pins[j], current[j]);
     }
   }
+  delay(5);
 }
 
 void handle_request(char *request, Client &client) {
@@ -180,7 +181,11 @@ void handle_request(char *request, Client &client) {
   for (const NamedColor *nc = colors; nc->name != 0; ++nc) {    
     char cbuf[32];
     strcpy_P(cbuf, nc->name);
-    snprintf(buf, sizeof(buf), "<INPUT TYPE=\"submit\" name=\"setcolor\" value=\"%s\" />", cbuf);
+    snprintf(buf, sizeof(buf), "<INPUT TYPE=\"submit\" name=\"setcolor\" "
+              "style=\"background: #%02x%02x%02x; color: #%02x%02x%02x\" value=\"%s\" />", 
+              nc->r, nc->g, nc->b,
+              nc->fgr, nc->fgg, nc->fgb,
+              cbuf);
     Serial.println(buf);
     client.println(buf);
   }
