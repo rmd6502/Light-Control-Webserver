@@ -36,13 +36,14 @@ class RequestBuf {
     requestbuf[requestpos++] = c;
     requestbuf[requestpos] = 0; 
   }
+  size_t size() const { return SZ; }
   const char& operator[](int pos) const { if (pos >= 0 && pos < SZ) return requestbuf[pos]; else return b; }
   char& operator[](int pos) { if (pos >= 0 && pos < SZ) return requestbuf[pos]; else return b; }
   operator char *() { return requestbuf; }
   operator const char *() const { return requestbuf; }
 };
 
-RequestBuf<128> requestbuf;
+RequestBuf<80> requestbuf;
 
 void setup() {
   Serial.begin(115200);
@@ -118,6 +119,15 @@ void loop() {
     delay(100);
     client.stop();
   }
+  for (int j=0; j < 3; ++j) {
+    if (goal[j] != current[j]) {
+      int dir = goal[j] - current[j];
+      dir /= abs(dir);
+      //Serial.print("dir "); Serial.println((short)dir);
+      current[j] += dir;
+      analogWrite(pins[j], current[j]);
+    }
+  }
 }
 
 void handle_request(char *request, Client &client) {
@@ -154,7 +164,7 @@ void handle_request(char *request, Client &client) {
   buf[255] = 0;
   Serial.println(buf);
   client.println(buf);
-  sprintf(buf, varPart, goal[0], goal[1], goal[2]);
+  snprintf(buf, sizeof(buf), varPart, goal[0], goal[1], goal[2]);
   buf[255] = 0;
   Serial.println(buf);
   client.println(buf);
@@ -162,7 +172,7 @@ void handle_request(char *request, Client &client) {
   for (const NamedColor *nc = colors; nc->name != 0; ++nc) {    
     char cbuf[32];
     strcpy_P(cbuf, nc->name);
-    sprintf(buf, "<INPUT TYPE=\"submit\" name=\"setcolor\" value=\"%s\" />", cbuf);
+    snprintf(buf, sizeof(buf), "<INPUT TYPE=\"submit\" name=\"setcolor\" value=\"%s\" />", cbuf);
     Serial.println(buf);
     client.println(buf);
   }
