@@ -1,5 +1,5 @@
 struct NamedColor {
-  const char * PROGMEM name;
+  const char * name;
   uint8_t r,g,b;
   // button bg is always the display color, foreground is a contrasting color
   uint8_t fgr, fgg, fgb;
@@ -17,12 +17,12 @@ const char PROGMEM off[] = "off";
 const char PROGMEM night[] = "night";
 
 const NamedColor colors[] = {
-  { red, 255, 0, 0, 0, 0, 0 },
-  { dim_red, 100, 0, 0, 255, 255, 255 },
+  { red, 255, 0, 0, 0, 255,255 },
+  { dim_red, 80, 0, 0, 255, 255, 255 },
   { orange, 255, 128, 0, 0, 0, 0 },
   { yellow, 255, 255, 0, 0, 0, 0 },
   { green, 0, 255, 0, 0, 0, 0 },
-  { blue, 0, 0, 255, 0, 0, 0 },  
+  { blue, 0, 0, 255, 255,255,255 },  
   { violet, 255, 0, 255, 0, 0, 0 },
   { white, 255, 240, 230, 0, 0, 0 },
   { off, 0, 0, 0, 255, 255, 255 },

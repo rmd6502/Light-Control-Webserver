@@ -44,7 +44,7 @@ class RequestBuf {
   operator const char *() const { return requestbuf; }
 };
 
-RequestBuf<80> requestbuf;
+RequestBuf<128> requestbuf;
 
 void setup() {
   Serial.begin(115200);
@@ -171,8 +171,6 @@ void handle_request(char *request, Client &client) {
   }
   output_P(buf, client, topPart);
   buf[255] = 0;
-  Serial.println(buf);
-  client.println(buf);
   snprintf(buf, sizeof(buf), varPart, goal[0], goal[1], goal[2]);
   buf[255] = 0;
   Serial.println(buf);
@@ -207,12 +205,16 @@ void printf_P(char *buf, const char *str) {
 void output_P(char *buf, Client& client, const char * str) {
   int part_len = strlen_P(str);
   int c = 0;
+  Serial.print("len ");
+  Serial.println(part_len);
+  memset(buf, 0, 256);
   while (c < part_len) {
     strncpy_P(buf, str+c, 255);
     buf[255] = 0;
-    Serial.println(buf);
+    Serial.print("c "); Serial.print(c); Serial.print(" buf \"");
+    Serial.print(buf);Serial.println("\"");
     client.println(buf);
-    c += (sizeof(buf)-1);
+    c += (255);
   }
 }
 
