@@ -150,23 +150,7 @@ void handle_request(char *request, Client &client) {
         goal[1] = atoi(q);
       } else if (*p == 'b') {
         goal[2] = atoi(q);
-      } else if (!strncasecmp(p, "setcolor", strlen("setcolor"))) {
-        char cbuf[32], dbuf[32] = {0};
-        strncpy(dbuf, q, 31);
-        char *k = dbuf;
-        while (*k) {
-          if (*k == '+') *k = ' ';
-          ++k;
-        }
-        for (const NamedColor *nc = colors; nc->name; ++nc) {
-          strcpy_P(cbuf, nc->name);
-          if (!strcasecmp(cbuf, dbuf)) {  
-            goal[0] = nc->r; goal[1] = nc->g; goal[2] = nc->b;
-            break;
-          }
-        }
-        break;
-      }    
+      } 
     }
   }
   output_P(buf, client, topPart);
@@ -176,14 +160,17 @@ void handle_request(char *request, Client &client) {
   Serial.println(buf);
   client.println(buf);
   output_P(buf, client, botPart1);
-  for (const NamedColor *nc = colors; nc->name != 0; ++nc) {    
+  for (const NamedColor *nc = colors; pgm_read_word(nc) != 0; ++nc) {    
     char cbuf[32];
-    strcpy_P(cbuf, nc->name);
-    snprintf(buf, sizeof(buf), "<INPUT TYPE=\"submit\" name=\"setcolor\" "
-              "style=\"background: #%02x%02x%02x; color: #%02x%02x%02x\" value=\"%s\" />", 
-              nc->r, nc->g, nc->b,
-              nc->fgr, nc->fgg, nc->fgb,
-              cbuf);
+    NamedColor ncl;
+    memcpy_P(&ncl, nc, sizeof(NamedColor));
+    strcpy_P(cbuf, ncl.name);
+    snprintf(buf, sizeof(buf), "<INPUT TYPE=\"button\" name=\"setcolor\" "
+              "style=\"background: #%02x%02x%02x; color: #%02x%02x%02x\" value=\"%s\" "
+              "onclick=\"setRGB(%d,%d,%d)\" />", 
+              ncl.r, ncl.g, ncl.b,
+              ncl.fgr, ncl.fgg, ncl.fgb,
+              cbuf, ncl.r, ncl.g, ncl.b);
     Serial.println(buf);
     client.println(buf);
   }
