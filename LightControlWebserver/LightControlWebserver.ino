@@ -19,6 +19,8 @@ static const int rLed = 3;
 static const int gLed = 5;
 static const int bLed = 6;
 
+static int8_t cycle = -1;
+
 byte current[3] = {0};
 byte goal[3] = {255, 200, 180};
 byte pins[3] = {0};
@@ -105,29 +107,34 @@ void loop() {
           current_line_is_blank = false;
         }
       }
-      for (int j=0; j < 3; ++j) {
-        if (goal[j] != current[j]) {
-          int dir = goal[j] - current[j];
-          dir /= abs(dir);
-          //Serial.print("dir "); Serial.println((short)dir);
-          current[j] += dir;
-          analogWrite(pins[j], current[j]);
-        }
-      }
-      delay(5);
+      checkColors();
     }
     // give the web browser time to receive the data
     delay(100);
     client.stop();
   }
+  checkColors();
+}
+
+void checkColors() {
+  uint8_t bgoal = 1;
   for (int j=0; j < 3; ++j) {
     if (goal[j] != current[j]) {
+      bgoal = 0;
       int dir = goal[j] - current[j];
       dir /= abs(dir);
       //Serial.print("dir "); Serial.println((short)dir);
       current[j] += dir;
       analogWrite(pins[j], current[j]);
     }
+  }
+  if (bgoal == 1 && cycle > -1) {
+    Serial.println("cycling");
+    NamedColor ncl;
+    memcpy_P(&ncl, &colors[cycle++], sizeof(NamedColor));
+    goal[0] = ncl.r; goal[1] = ncl.g; goal[2] = ncl.b;
+    memcpy_P(&ncl, &colors[cycle], sizeof(NamedColor));
+    if (ncl.name == 0) cycle = 0;
   }
   delay(5);
 }
@@ -144,7 +151,11 @@ void handle_request(char *request, Client &client) {
     for (p = strtok(p, "&"); p != NULL; p = strtok(NULL, "&")) {
       char *q = strchr(p, '=');
       if (q) ++q;
-      if (*p == 'r') {
+      Serial.print("p "); Serial.println(p);
+      if (!strncasecmp(p, "cycle", 5)) {
+        if (cycle == -1) cycle = 0; else cycle = -1;
+      }
+      else if (*p == 'r') {
         goal[0] = atoi(q);
       } else if (*p == 'g') {
         goal[1] = atoi(q);
@@ -160,8 +171,15 @@ void handle_request(char *request, Client &client) {
   Serial.println(buf);
   client.println(buf);
   output_P(buf, client, botPart1);
+  int count = 0;
+  char cbuf[64];
+  strcpy_P(cbuf, cycleButton);
+  sprintf(buf, cbuf, (cycle > -1) ? "Stop Cycling" : "Cycle");
+  Serial.println(buf);
+  client.println(buf);
+  
   for (const NamedColor *nc = colors; pgm_read_word(nc) != 0; ++nc) {    
-    char cbuf[32];
+    
     NamedColor ncl;
     memcpy_P(&ncl, nc, sizeof(NamedColor));
     strcpy_P(cbuf, ncl.name);
@@ -173,6 +191,9 @@ void handle_request(char *request, Client &client) {
               cbuf, ncl.r, ncl.g, ncl.b);
     Serial.println(buf);
     client.println(buf);
+    if (!(++count & 0x7)) {
+      client.println("<br />");
+    }
   }
   output_P(buf, client, botPart2);
 }
