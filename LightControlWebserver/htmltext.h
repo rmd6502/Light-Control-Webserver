@@ -18,7 +18,7 @@ const char topPart[] PROGMEM = "HTTP/1.1 200 OK\n"
   "<TABLE style=\"border: solid;\">"
   "<TR>";
 
-const char cycleButton[] PROGMEM = "<INPUT TYPE=\"submit\" name=\"cycle\" value=\"%s\"/><br />";
+const char cycleButton[] PROGMEM = "<INPUT TYPE=\"submit\" name=\"cycle\" value=\"%s\"/><br /><INPUT TYPE=\"submit\" name=\"random\" value=\"%s\"/><br />";
 
 const char varPart[] = "<TD>Red</TD><TD><INPUT TYPE=\"text\" name=\"r\" value=\"%d\"/></TD>"
   "</TR>"

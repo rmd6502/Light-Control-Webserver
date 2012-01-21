@@ -20,6 +20,7 @@ static const int gLed = 5;
 static const int bLed = 6;
 
 static int8_t cycle = -1;
+static uint16_t dly = 5;
 
 byte current[3] = {0};
 byte goal[3] = {255, 200, 180};
@@ -128,15 +129,23 @@ void checkColors() {
       analogWrite(pins[j], current[j]);
     }
   }
-  if (bgoal == 1 && cycle > -1) {
-    Serial.println("cycling");
-    NamedColor ncl;
-    memcpy_P(&ncl, &colors[cycle++], sizeof(NamedColor));
-    goal[0] = ncl.r; goal[1] = ncl.g; goal[2] = ncl.b;
-    memcpy_P(&ncl, &colors[cycle], sizeof(NamedColor));
-    if (ncl.name == 0) cycle = 0;
+  if (bgoal == 1 && cycle != -1) {
+    if (cycle >= 0) {
+      Serial.println("cycling");
+      NamedColor ncl;
+      memcpy_P(&ncl, &colors[cycle++], sizeof(NamedColor));
+      goal[0] = ncl.r; goal[1] = ncl.g; goal[2] = ncl.b;
+      memcpy_P(&ncl, &colors[cycle], sizeof(NamedColor));
+      if (ncl.name == 0) cycle = 0;
+    } else {
+      Serial.println("randoming");
+      delay(50);
+      goal[0] = random() & 0xff;
+      goal[1] = random() & 0xff;
+      goal[2] = random() & 0xff;
+    }
   }
-  delay(5);
+  delay(dly);
 }
 
 void handle_request(char *request, Client &client) {
@@ -153,7 +162,20 @@ void handle_request(char *request, Client &client) {
       if (q) ++q;
       Serial.print("p "); Serial.println(p);
       if (!strncasecmp(p, "cycle", 5)) {
+        if (cycle == -2) cycle = -1; else
         if (cycle == -1) cycle = 0; else cycle = -1;
+      }
+      else if (!strncasecmp(p, "random", 6)) {
+        if (cycle >= -1) {
+          cycle = -2;
+          dly = 20;
+        } else {
+          cycle = -1;
+          dly = 5;
+        }
+      }
+      else if (!strncasecmp(p, "delay", 5)) {
+        dly = atoi(q);
       }
       else if (*p == 'r') {
         goal[0] = atoi(q);
@@ -172,9 +194,9 @@ void handle_request(char *request, Client &client) {
   client.println(buf);
   output_P(buf, client, botPart1);
   int count = 0;
-  char cbuf[64];
+  char cbuf[140];
   strcpy_P(cbuf, cycleButton);
-  sprintf(buf, cbuf, (cycle > -1) ? "Stop Cycling" : "Cycle");
+  sprintf(buf, cbuf, ((cycle > -1) ? "Stop Cycling" : "Cycle"), ((cycle == -2) ? "Stop Random" : "Random"));
   Serial.println(buf);
   client.println(buf);
   
