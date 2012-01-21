@@ -179,10 +179,13 @@ void handle_request(char *request, Client &client) {
       }
       else if (*p == 'r') {
         goal[0] = atoi(q);
+        cycle = -1;
       } else if (*p == 'g') {
         goal[1] = atoi(q);
+        cycle = -1;
       } else if (*p == 'b') {
         goal[2] = atoi(q);
+        cycle = -1;
       } 
     }
   }
